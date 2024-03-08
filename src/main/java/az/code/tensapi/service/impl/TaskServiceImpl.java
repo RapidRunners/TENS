@@ -6,18 +6,20 @@ import az.code.tensapi.entity.Category;
 import az.code.tensapi.entity.Project;
 import az.code.tensapi.entity.Task;
 import az.code.tensapi.entity.User;
-import az.code.tensapi.exception.TaskNotFoundException;
-import az.code.tensapi.exception.UserNotFoundException;
+import az.code.tensapi.exception.*;
 import az.code.tensapi.repository.CategoryRepository;
 import az.code.tensapi.repository.ProjectRepository;
 import az.code.tensapi.repository.TaskRepository;
 import az.code.tensapi.repository.UserRepository;
+import az.code.tensapi.service.AiService;
 import az.code.tensapi.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class TaskServiceImpl implements TaskService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final AiService aiService;
 
     @Override
     public List<TaskResponse> getAll() {
@@ -43,14 +46,39 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse create(TaskRequest request) {
         Task task = modelMapper.map(request, Task.class);
 
-        Project project = projectRepository.findById(request.getProjectId()).orElseThrow();
-        Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow();
-        task.setCategory(category);
-        task.setProject(project);
+        if (request.getCategoryId() != null) {
+            Optional<Category> optionalCategory = categoryRepository.findById(request.getCategoryId());
+            if (optionalCategory.isPresent()) {
+                Category category = optionalCategory.get();
+                task.setCategory(category);
+            } else {
+                throw new CategoryNotFoundException(ErrorCodes.CATEGORY_NOT_FOUND);
+            }
+        } else {
+            String prompt = "Suggest category for task: " + task.getName();
+            String suggestedCategory = aiService.chat(prompt);
+
+            Category category = new Category();
+            category.setName(suggestedCategory);
+
+            Category savedCategory = categoryRepository.save(category);
+
+            task.setCategory(savedCategory);
+        }
+
+        if (request.getProjectId() != null) {
+            Optional<Project> optionalProject = projectRepository.findById(request.getProjectId());
+            if (optionalProject.isPresent()) {
+                Project project = optionalProject.get();
+                task.setProject(project);
+            } else {
+                throw new ProjectNotFoundException(ErrorCodes.PROJECT_NOT_FOUND);
+            }
+        }
 
         return modelMapper.map(taskRepository.save(task), TaskResponse.class);
-
     }
+
 
     @Override
     public TaskResponse update(Long id, TaskRequest request) {
@@ -77,17 +105,18 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.delete(task);
 
     }
+
     public void addUserToTask(Long taskId, Long userId) {
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404,"Task not found with ID: " + taskId));
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404,"User not found with ID: " + userId));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404, "Task not found with ID: " + taskId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404, "User not found with ID: " + userId));
 
         task.getAccounts().add(user);
         taskRepository.save(task);
     }
 
     public void removeUserFromTask(Long taskId, Long userId) {
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404,"Task not found with ID: " + taskId));
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404,"User not found with ID: " + userId));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404, "Task not found with ID: " + taskId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404, "User not found with ID: " + userId));
 
         task.getAccounts().remove(user);
         taskRepository.save(task);
