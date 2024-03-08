@@ -17,9 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +43,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskResponse create(TaskRequest request) {
         Task task = modelMapper.map(request, Task.class);
+        Map<String, String> messages = getStringStringMap(request.getName() + request.getDescription());
+        String suggestedSummary = aiService.summarize(messages);
+        task.setSummary(suggestedSummary);
+
 
         if (request.getCategoryId() != null) {
             Optional<Category> optionalCategory = categoryRepository.findById(request.getCategoryId());
@@ -56,7 +58,7 @@ public class TaskServiceImpl implements TaskService {
             }
         } else {
             String prompt = "Suggest category for task: " + task.getName();
-            String suggestedCategory = aiService.chat(prompt);
+            String suggestedCategory = aiService.chat("user", prompt);
 
             Category category = new Category();
             category.setName(suggestedCategory);
@@ -77,6 +79,15 @@ public class TaskServiceImpl implements TaskService {
         }
 
         return modelMapper.map(taskRepository.save(task), TaskResponse.class);
+    }
+
+    private static Map<String, String> getStringStringMap(String userPrompt ) {
+        Map<String, String> messages = new HashMap<>();
+        String systemPrompt = "Use the following step-by-step instructions to respond to user inputs.\n" +
+                " The user will provide you with text in triple quotes. Summarize this text in one sentence with a prefix that says \"Summary: \".\n";
+        messages.put("user", userPrompt);
+        messages.put("system", systemPrompt);
+        return messages;
     }
 
 

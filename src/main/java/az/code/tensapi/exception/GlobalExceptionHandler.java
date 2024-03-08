@@ -2,20 +2,13 @@ package az.code.tensapi.exception;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
-import java.util.Map;
-
-import static org.springframework.http.HttpHeaders.ACCEPT_LANGUAGE;
-
 @ControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
-
-
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleCategoryNotFoundException(CategoryNotFoundException ex,
                                                                             WebRequest req) {
