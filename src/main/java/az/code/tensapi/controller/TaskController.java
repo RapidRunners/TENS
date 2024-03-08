@@ -37,4 +37,15 @@ public class TaskController {
         taskService.delete(id);
     }
 
+    @PostMapping("/task-user")
+    public ResponseEntity<String> addUserToTask(@RequestParam Long taskId, @RequestParam Long userId){
+        taskService.addUserToTask(taskId,userId);
+        return ResponseEntity.ok("Add user to task");
+    }
+
+    @DeleteMapping("/task-user")
+    public ResponseEntity<String> removeUserFromTask(@RequestParam Long taskId, @RequestParam Long userId){
+        taskService.removeUserFromTask(taskId,userId);
+        return ResponseEntity.ok("Remove user to task");
+    }
 }

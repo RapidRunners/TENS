@@ -5,7 +5,9 @@ import az.code.tensapi.dto.response.TaskResponse;
 import az.code.tensapi.entity.Category;
 import az.code.tensapi.entity.Project;
 import az.code.tensapi.entity.Task;
+import az.code.tensapi.entity.User;
 import az.code.tensapi.exception.TaskNotFoundException;
+import az.code.tensapi.exception.UserNotFoundException;
 import az.code.tensapi.repository.CategoryRepository;
 import az.code.tensapi.repository.ProjectRepository;
 import az.code.tensapi.repository.TaskRepository;
@@ -75,5 +77,19 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.delete(task);
 
     }
+    public void addUserToTask(Long taskId, Long userId) {
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404,"Task not found with ID: " + taskId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404,"User not found with ID: " + userId));
 
+        task.getAccounts().add(user);
+        taskRepository.save(task);
+    }
+
+    public void removeUserFromTask(Long taskId, Long userId) {
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404,"Task not found with ID: " + taskId));
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404,"User not found with ID: " + userId));
+
+        task.getAccounts().remove(user);
+        taskRepository.save(task);
+    }
 }
