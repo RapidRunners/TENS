@@ -24,7 +24,7 @@ public class AiController {
     private String apiURL;
 
 
-    @GetMapping("/")
+    @GetMapping
     public String chat(@RequestParam("prompt") String prompt) {
         AIRequestDto request = new AIRequestDto(model, prompt);
         AIResponseDto chatGptResponse = template.postForObject(apiURL, request, AIResponseDto.class);
