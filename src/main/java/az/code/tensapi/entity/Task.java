@@ -23,7 +23,8 @@ public class Task {
     String description;
     LocalDate deadline;
     boolean completed;
-    Prioritize prioritize;
+    Priority prioritize;
+    String summary;
 
     @ManyToMany
     @JoinTable(name = "task_user",

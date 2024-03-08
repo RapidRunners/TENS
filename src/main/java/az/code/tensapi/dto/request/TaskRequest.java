@@ -1,6 +1,6 @@
 package az.code.tensapi.dto.request;
 
-import az.code.tensapi.entity.Prioritize;
+import az.code.tensapi.entity.Priority;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ public class TaskRequest {
         private String name;
         private String description;
         private LocalDate deadline;
-        private Prioritize prioritize;
+        private Priority prioritize;
         private Long categoryId;
         private Long projectId;
 

@@ -1,6 +1,6 @@
 package az.code.tensapi.entity;
 
-public enum Prioritize {
+public enum Priority {
     HIGH,
     MEDIUM,
     LOW
