@@ -2,15 +2,15 @@ package az.code.tensapi.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,13 +18,13 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-//    @Value("${jwt-secret}") TODO
+//    @Value("${jwt-secret}")
     private static final String SECRET_KEY = "8f09669ab33ae0c90f375f07bca6b22f5ac2a496e505c5ffa3cf15460b69a882";
-    public String extractUsername(String token) {
+    public String extractUsername(String token) throws MalformedJwtException {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsTResolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsTResolver) throws MalformedJwtException {
         final Claims claims = extractClaims(token);
         return claimsTResolver.apply(claims);
     }
@@ -59,11 +59,11 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public Claims extractClaims(String token) {
+    public Claims extractClaims(String token) throws MalformedJwtException {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
 
