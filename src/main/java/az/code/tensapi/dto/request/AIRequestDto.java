@@ -1,4 +1,4 @@
-package az.code.tensapi.dto;
+package az.code.tensapi.dto.request;
 
 import lombok.Data;
 

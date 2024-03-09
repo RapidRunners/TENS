@@ -1,16 +1,12 @@
 package az.code.tensapi.service;
 
-import az.code.tensapi.dto.AIRequestDto;
-import az.code.tensapi.dto.AIResponseDto;
-import az.code.tensapi.dto.Message;
+import az.code.tensapi.dto.request.AIRequestDto;
+import az.code.tensapi.dto.response.AIResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @Service

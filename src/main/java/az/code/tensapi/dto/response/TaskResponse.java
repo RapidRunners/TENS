@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,8 +17,8 @@ public class TaskResponse {
     private String description;
     private LocalDate deadline;
     private Priority prioritize;
-    // private List<User> accounts,
+    private String summary;
     private Category category;
-    private  Project project;
+    private Project project;
 
 }

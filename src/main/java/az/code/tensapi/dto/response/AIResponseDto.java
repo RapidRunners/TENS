@@ -1,5 +1,6 @@
-package az.code.tensapi.dto;
+package az.code.tensapi.dto.response;
 
+import az.code.tensapi.dto.request.Message;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
