@@ -134,20 +134,5 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.save(task);
     }
 
-    @Scheduled(cron = "0 45 6 * * ?")
-    public void sendTaskNotification() {
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-        List<Task> tasks = taskRepository.findByDeadline(tomorrow);
-        for (Task task : tasks) {
-            for (User user : task.getAccounts()) {
-                Notification notification = new Notification();
-                notification.setMessage("Task " + task.getName() + " deadline is tomorrow.");
-                notification.setTimestamp(LocalDateTime.now());
-                notification.setStatus("unread");
-                notification.setUser(user);
-                notificationRepository.save(notification);
-                emailService.sentMailMessage(user.getEmail(), notification.getMessage());
-            }
-        }
-    }
+
 }
