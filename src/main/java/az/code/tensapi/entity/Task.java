@@ -23,6 +23,7 @@ public class Task {
     String description;
     LocalDate deadline;
     boolean completed;
+    @Enumerated(EnumType.STRING)
     Priority prioritize;
     String summary;
 
