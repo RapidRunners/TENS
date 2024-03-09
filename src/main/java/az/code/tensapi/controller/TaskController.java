@@ -26,6 +26,10 @@ public class TaskController {
     public ResponseEntity<TaskResponse> create(@RequestBody TaskRequest request) {
         return new ResponseEntity<>(taskService.create(request), HttpStatus.CREATED);
     }
+    @PostMapping("/save")
+    public ResponseEntity<String> save(@RequestBody String request) {
+        return new ResponseEntity<>(taskService.rec(request), HttpStatus.CREATED);
+    }
     @PutMapping("/{id}")
     public ResponseEntity<TaskResponse> update(@PathVariable Long id,
                                                @RequestBody TaskRequest request) {

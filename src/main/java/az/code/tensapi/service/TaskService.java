@@ -8,8 +8,8 @@ import java.util.List;
 public interface TaskService {
     List<TaskResponse> getAll();
     TaskResponse create(TaskRequest request);
+    String rec(String request);
     TaskResponse update(Long id, TaskRequest request);
-
     void delete(Long id);
     void removeUserFromTask(Long taskId, Long userId);
     void addUserToTask(Long taskId, Long userId);

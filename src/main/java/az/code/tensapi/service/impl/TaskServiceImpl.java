@@ -81,12 +81,37 @@ public class TaskServiceImpl implements TaskService {
         return modelMapper.map(taskRepository.save(task), TaskResponse.class);
     }
 
+    @Override
+    public String rec(String request) {
+        return aiService.recognize(recognize(request));
+    }
+
+
     private static Map<String, String> getStringStringMap(String userPrompt ) {
         Map<String, String> messages = new HashMap<>();
-        String systemPrompt = "Use the following step-by-step instructions to respond to user inputs.\n" +
-                " The user will provide you with text in triple quotes. Summarize this text in one sentence with a prefix that says \"Summary: \".\n";
+        String systemPrompt = "The user will provide you with text in triple quotes. Summarize this text in one sentence with a prefix that says \"Summary: \".\n";
         messages.put("user", userPrompt);
         messages.put("system", systemPrompt);
+        return messages;
+    }
+    private static Map<String, String> recognize(String userPrompt ) {
+        Map<String, String> messages = new HashMap<>();
+        String systemPrompt = "You will be provided in any language with sentence with information about task. Translate it to english and Convert it to JSON like in the following example, use field names from JSON example.Deadline should be LocalDate";
+        String systemJson = "{\n" +
+                "    \"name\": \"Request Management\",\n" +
+                "    \"description\": \"Convert each offer into an image. Send the offer images to clients. Update the status of agent_request when an offer is accepted via Telegram reply from RabbitMQ.\",\n" +
+                "    \"deadline\": null,\n" +
+                "    \"prioritize\": null,\n" +
+                "    \"summary\": \"Summary: The user is requesting a system flow to convert offers into images, send them to clients, and update the status of agent requests when an offer is accepted via Telegram reply from RabbitMQ.\",\n" +
+                "    \"category\": {\n" +
+                "        \"id\": 4,\n" +
+                "        \"name\": \"Customer Service / Help Desk\",\n" +
+                "        \"description\": null\n" +
+                "    },\n" +
+                "    \"project\": null\n" +
+                "}";
+        messages.put("user", userPrompt);
+        messages.put("system", systemPrompt+systemJson);
         return messages;
     }
 

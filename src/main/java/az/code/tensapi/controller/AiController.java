@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiController {
 
     private final AiService service;
-
     @GetMapping
     public String chat(@RequestParam("prompt") String prompt, @RequestParam("role") String role) {
         return service.chat(role, prompt);

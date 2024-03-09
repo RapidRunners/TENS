@@ -35,6 +35,14 @@ public class AiService {
         return aiResponse.getChoices().get(0).getMessage().getContent();
     }
 
+    public String recognize(Map<String, String> message) {
+        AIRequestDto request = new AIRequestDto(model);
+        message.forEach((k, v) -> request.setPrompt(v, k));
+        AIResponseDto aiResponse = template.postForObject(apiURL, request, AIResponseDto.class);
+        return aiResponse.getChoices().get(0).getMessage().getContent();
+    }
+
+
 
 }
 
