@@ -2,25 +2,24 @@ package az.code.tensapi.service.impl;
 
 import az.code.tensapi.dto.request.TaskRequest;
 import az.code.tensapi.dto.response.TaskResponse;
-import az.code.tensapi.entity.Category;
-import az.code.tensapi.entity.Project;
-import az.code.tensapi.entity.Task;
-import az.code.tensapi.entity.User;
+import az.code.tensapi.entity.*;
 import az.code.tensapi.exception.*;
-import az.code.tensapi.repository.CategoryRepository;
-import az.code.tensapi.repository.ProjectRepository;
-import az.code.tensapi.repository.TaskRepository;
-import az.code.tensapi.repository.UserRepository;
+import az.code.tensapi.repository.*;
 import az.code.tensapi.service.AiService;
+import az.code.tensapi.service.EmailService;
 import az.code.tensapi.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
@@ -29,6 +28,8 @@ public class TaskServiceImpl implements TaskService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final AiService aiService;
+    private final EmailService emailService;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public List<TaskResponse> getAll() {
@@ -81,7 +82,7 @@ public class TaskServiceImpl implements TaskService {
         return modelMapper.map(taskRepository.save(task), TaskResponse.class);
     }
 
-    private static Map<String, String> getStringStringMap(String userPrompt ) {
+    private static Map<String, String> getStringStringMap(String userPrompt) {
         Map<String, String> messages = new HashMap<>();
         String systemPrompt = "Use the following step-by-step instructions to respond to user inputs.\n" +
                 " The user will provide you with text in triple quotes. Summarize this text in one sentence with a prefix that says \"Summary: \".\n";
@@ -131,5 +132,22 @@ public class TaskServiceImpl implements TaskService {
 
         task.getAccounts().remove(user);
         taskRepository.save(task);
+    }
+
+    @Scheduled(cron = "0 45 6 * * ?")
+    public void sendTaskNotification() {
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        List<Task> tasks = taskRepository.findByDeadline(tomorrow);
+        for (Task task : tasks) {
+            for (User user : task.getAccounts()) {
+                Notification notification = new Notification();
+                notification.setMessage("Task " + task.getName() + " deadline is tomorrow.");
+                notification.setTimestamp(LocalDateTime.now());
+                notification.setStatus("unread");
+                notification.setUser(user);
+                notificationRepository.save(notification);
+                emailService.sentMailMessage(user.getEmail(), notification.getMessage());
+            }
+        }
     }
 }
