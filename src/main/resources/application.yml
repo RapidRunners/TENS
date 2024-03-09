@@ -10,4 +10,11 @@ spring:
       ddl-auto: update
     show-sql: false
     open-in-view: true
+
 jwt-secret: 8f09669ab33ae0c90f375f07bca6b22f5ac2a496e505c5ffa3cf15460b69a882
+
+openai:
+  model: "gpt-3.5-turbo"
+  api:
+    key: ${api_key}
+    url: "https://api.openai.com/v1/chat/completions"
