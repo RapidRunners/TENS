@@ -1,6 +1,7 @@
 package az.code.tensapi.service.impl;
 
 import az.code.tensapi.entity.Notification;
+import az.code.tensapi.entity.Priority;
 import az.code.tensapi.entity.Task;
 import az.code.tensapi.entity.User;
 import az.code.tensapi.repository.NotificationRepository;
@@ -33,6 +34,25 @@ public class ScheduleService {
                 notification.setUser(user);
                 notificationRepository.save(notification);
                 emailService.sentMailMessage(user.getEmail(), notification.getMessage());
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    public void checkTaskDeadlines() {
+        LocalDate now = LocalDate.now();
+        LocalDate twoDaysFromNow = now.plusDays(2);
+
+        List<Task> tasks = taskRepository.findAll();
+        for (Task task : tasks) {
+            for (User user : task.getAccounts()) {
+                if (task.getDeadline().isBefore(twoDaysFromNow) && task.getPrioritize() != Priority.HIGH) {
+                    task.setPrioritize(Priority.HIGH);
+                    taskRepository.save(task);
+                    String notification = "Task " + task.getName() + " become priority High";
+                    emailService.sentMailMessage(user.getEmail(), notification);
+
+                }
             }
         }
     }
