@@ -46,7 +46,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/confirm")
+    @GetMapping(value = "/confirm", produces = "application/json")
     public ResponseEntity<EmailConfirmationResponse> confirmEmail(@RequestParam("confirmationToken") String token) {
         EmailConfirmationResponse response = service.confirmEmail(token);
         if (response==null) {

@@ -29,7 +29,7 @@ public class AuthService {
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (userRepo.findByEmail(request.getEmail()).isPresent())
-            throw new RuntimeException();
+            return null;
 
         var user = User.builder()
                 .username(request.getUsername())
