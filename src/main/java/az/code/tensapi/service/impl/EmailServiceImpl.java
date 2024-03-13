@@ -28,7 +28,7 @@ public class EmailServiceImpl implements EmailService {
         message.setSubject("Confirmation Email");
         message.setText(
                 "Welcome to our application! Please confirm your email address by clicking the link below:\n\n"
-                + "%s/api/v1/confirm?confirmationToken=".formatted("localhost:8080") + confirmationToken);
+                + "%s/api/v1/auth/confirm?confirmationToken=".formatted("localhost:8080") + confirmationToken);
         javaMailSender.send(message);
     }
 
