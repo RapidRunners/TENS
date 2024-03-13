@@ -29,8 +29,8 @@ public class AuthenticationController {
         AuthenticationResponse response = service.authenticate(request);
         if (response == null) {
             HttpHeaders headers = new HttpHeaders();
-            headers.add("message", "Session expired, please login again");
-            return new ResponseEntity<>(headers, HttpStatus.NOT_ACCEPTABLE);
+            headers.add("message", "Username or password is wrong");
+            return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
         }
         return ResponseEntity.ok(service.authenticate(request));
     }
@@ -46,4 +46,14 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping(value = "/confirm", produces = "application/json")
+    public ResponseEntity<EmailConfirmationResponse> confirmEmail(@RequestParam("confirmationToken") String token) {
+        EmailConfirmationResponse response = service.confirmEmail(token);
+        if (response==null) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("message", "Already confirmed");
+            return new ResponseEntity<>(headers, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

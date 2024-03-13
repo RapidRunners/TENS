@@ -2,7 +2,6 @@ package az.code.tensapi.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -27,16 +26,16 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String extractTokenType(String token) throws MalformedJwtException {
+    public String extractTokenType(String token) {
         return extractClaim(token, claims -> claims.get("tokenType", String.class));
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsTResolver) throws MalformedJwtException {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsTResolver) {
         final Claims claims = extractClaims(token);
         return claimsTResolver.apply(claims);
     }
 
-    public Claims extractClaims(String token) throws MalformedJwtException {
+    public Claims extractClaims(String token) throws RuntimeException {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -67,10 +66,10 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return (username.equals(userDetails.getUsername())) && !isExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean isExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 

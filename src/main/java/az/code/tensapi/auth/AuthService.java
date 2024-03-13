@@ -7,7 +7,6 @@ import az.code.tensapi.entity.User;
 import az.code.tensapi.repository.UserRepo;
 import az.code.tensapi.service.EmailService;
 import az.code.tensapi.service.ConfirmationTokenService;
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,9 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -77,38 +73,38 @@ public class AuthService {
     }
 
     public AuthenticationResponse regenerateTokens(RefreshTokenRequest request) {
+//        String accessToken = request.getAccessToken();
         String refreshToken = request.getRefreshToken();
+        if (refreshToken == null)
+            return null;
 
-        try {
+        if (!jwtService.isExpired(refreshToken)
+                && jwtService.extractTokenType(refreshToken).equalsIgnoreCase("refresh")) {
             String username = jwtService.extractUsername(refreshToken);
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(refreshToken, userDetails)) {
-                String newAccessToken = jwtService.generateAccessToken(userDetails);
-                String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+            String newAccessToken = jwtService.generateAccessToken(userDetails);
+            String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
-                return AuthenticationResponse.builder()
-                        .accessToken(newAccessToken)
-                        .refreshToken(newRefreshToken)
-                        .build();
-            } else {
-                return null;
-            }
-        } catch (ExpiredJwtException ex) {
-            return null;
+            return AuthenticationResponse.builder()
+                    .accessToken(newAccessToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
         }
+        return null;
     }
 
     public EmailConfirmationResponse confirmEmail(String request) {
         ConfirmationToken token = confirmationTokenService.getByToken(request);
         if (token == null)
             return null;
+
         String email = token.getUser().getEmail();
         User user = userRepo.findByEmail(email).orElseThrow();
         user.setVerified(true);
         userRepo.save(user);
 
-//        confirmationTokenService.delete(token);
+        confirmationTokenService.delete(token);
         return EmailConfirmationResponse
                 .builder()
                 .confirmed(true)

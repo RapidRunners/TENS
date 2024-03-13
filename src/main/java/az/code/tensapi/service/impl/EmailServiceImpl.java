@@ -3,8 +3,6 @@ package az.code.tensapi.service.impl;
 
 import az.code.tensapi.service.EmailService;
 import lombok.RequiredArgsConstructor;
-import az.code.tensapi.service.EmailService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -26,9 +24,8 @@ public class EmailServiceImpl implements EmailService {
         message.setFrom("tensrapidteam@gmail.com");
         message.setTo(to);
         message.setSubject("Confirmation Email");
-        message.setText(
-                "Welcome to our application! Please confirm your email address by clicking the link below:\n\n"
-                + "%s/api/v1/confirm?confirmationToken=".formatted("localhost:8080") + confirmationToken);
+        message.setText("Welcome to our application! Please confirm your email address by clicking the link below:\n" +
+                "http://localhost:8080/api/v1/auth/confirm?confirmationToken=" + confirmationToken);
         javaMailSender.send(message);
     }
 
