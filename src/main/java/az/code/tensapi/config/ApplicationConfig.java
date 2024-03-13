@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
+// This class is used for creating bean of AuthenticationProvider
+// for use in SecurityConfig.
 public class ApplicationConfig {
     private final UserRepo userRepo;
 

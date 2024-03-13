@@ -6,7 +6,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,46 +17,23 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class JwtService {
-//    @Value("${jwt-secret}")
     private static final String SECRET_KEY = "8f09669ab33ae0c90f375f07bca6b22f5ac2a496e505c5ffa3cf15460b69a882";
-    public String extractUsername(String token) throws MalformedJwtException {
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME_MS = 1000 * 60 * 60; // 1 hour
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME_MS = 1000L * 60 * 60 * 24; // 1 day
+
+    public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractTokenType(String token) throws MalformedJwtException {
+        return extractClaim(token, claims -> claims.get("tokenType", String.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsTResolver) throws MalformedJwtException {
         final Claims claims = extractClaims(token);
         return claimsTResolver.apply(claims);
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
-    }
-
-    public String generateToken(
-            Map<String, Object> extraClaims,
-            UserDetails userDetails) {
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 *60 * 24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     public Claims extractClaims(String token) throws MalformedJwtException {
@@ -65,6 +42,40 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String generateAccessToken(UserDetails userDetails) {
+        return generateJwt(userDetails, ACCESS_TOKEN_EXPIRATION_TIME_MS, "access");
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateJwt(userDetails, REFRESH_TOKEN_EXPIRATION_TIME_MS, "refresh");
+    }
+
+    public String generateJwt(UserDetails userDetails, long expirationTime, String tokenType) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tokenType", tokenType);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
     private Key getSigningKey() {
