@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 @RestController
@@ -38,7 +40,7 @@ public class TaskController {
     }
 
     @PostMapping("/task-user")
-    public ResponseEntity<String> addUserToTask(@RequestParam Long taskId, @RequestParam Long userId){
+    public ResponseEntity<String> addUserToTask(@RequestParam Long taskId, @RequestParam Long userId) throws GeneralSecurityException, IOException {
         taskService.addUserToTask(taskId,userId);
         return ResponseEntity.ok("Add user to task");
     }

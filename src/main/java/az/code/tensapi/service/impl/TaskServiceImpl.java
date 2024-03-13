@@ -12,11 +12,15 @@ import az.code.tensapi.repository.ProjectRepository;
 import az.code.tensapi.repository.TaskRepository;
 import az.code.tensapi.repository.UserRepository;
 import az.code.tensapi.service.AiService;
+import az.code.tensapi.service.GoogleCalendarService;
 import az.code.tensapi.service.TaskService;
+import com.google.api.services.calendar.model.Event;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.*;
 
 @Service
@@ -29,6 +33,7 @@ public class TaskServiceImpl implements TaskService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final AiService aiService;
+    private final GoogleCalendarService calendarService;
 
     @Override
     public List<TaskResponse> getAll() {
@@ -81,7 +86,7 @@ public class TaskServiceImpl implements TaskService {
         return modelMapper.map(taskRepository.save(task), TaskResponse.class);
     }
 
-    private static Map<String, String> getStringStringMap(String userPrompt ) {
+    private static Map<String, String> getStringStringMap(String userPrompt) {
         Map<String, String> messages = new HashMap<>();
         String systemPrompt = "Use the following step-by-step instructions to respond to user inputs.\n" +
                 " The user will provide you with text in triple quotes. Summarize this text in one sentence with a prefix that says \"Summary: \".\n";
@@ -117,12 +122,15 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
-    public void addUserToTask(Long taskId, Long userId) {
+    public void addUserToTask(Long taskId, Long userId) throws GeneralSecurityException, IOException {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException(404, "Task not found with ID: " + taskId));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(404, "User not found with ID: " + userId));
 
         task.getAccounts().add(user);
         taskRepository.save(task);
+
+
+        calendarService.createEvent(user.getEmail(), task.getSummary(), task.getDescription(), task.getDeadline());
     }
 
     public void removeUserFromTask(Long taskId, Long userId) {
