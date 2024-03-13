@@ -10,8 +10,17 @@ spring:
       ddl-auto: update
     show-sql: false
     open-in-view: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: nazimfb@code.edu.az
+    password: ${MAIL_PASSKEY}
+    properties:
+      mail.smtp:
+        auth: true
+        starttls.enable: true
 
-jwt-secret: 8f09669ab33ae0c90f375f07bca6b22f5ac2a496e505c5ffa3cf15460b69a882
+#jwt-secret: 8f09669ab33ae0c90f375f07bca6b22f5ac2a496e505c5ffa3cf15460b69a882
 
 openai:
   model: "gpt-3.5-turbo"

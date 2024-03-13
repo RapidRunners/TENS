@@ -28,6 +28,7 @@ public class User implements UserDetails {
     private String email;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private boolean verified;
 
     @Override
     public String getUsername() {
